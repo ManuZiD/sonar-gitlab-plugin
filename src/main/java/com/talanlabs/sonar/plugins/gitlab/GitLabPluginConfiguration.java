@@ -58,7 +58,11 @@ public class GitLabPluginConfiguration {
         this.configuration = configuration;
         this.system2 = system2;
 
-        String tempBaseUrl = configuration.hasKey(CoreProperties.SERVER_BASE_URL) ? configuration.get(CoreProperties.SERVER_BASE_URL).orElse(null) : configuration.get("sonar.host.url").orElse(null);
+        String tempBaseUrl =
+                configuration.hasKey(CoreProperties.SERVER_BASE_URL) ?
+                        configuration.get(CoreProperties.SERVER_BASE_URL).orElse(null) :
+                        configuration.get("sonar.host.url").orElse(null);
+
         if (tempBaseUrl == null) {
             tempBaseUrl = "http://localhost:9000";
         }
@@ -268,5 +272,10 @@ public class GitLabPluginConfiguration {
 
     public boolean isMergeRequestDiscussion() {
         return configuration.getBoolean(GitLabPlugin.GITLAB_MERGE_REQUEST_DISCUSSION).orElse(false);
+    }
+
+    public boolean isMergeRequestIidPresent() {
+
+        return false;
     }
 }

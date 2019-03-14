@@ -213,7 +213,8 @@ public class GitLabApiV4Wrapper implements IGitLabApiWrapper {
     @Override
     public void createOrUpdateSonarQubeStatus(String status, String statusDescription) {
         try {
-            gitLabAPIV4.getGitLabAPICommits().postCommitStatus(gitLabProject.getId(), getFirstCommitSHA(), status, config.refName(), COMMIT_CONTEXT, null, statusDescription);
+            gitLabAPIV4.getGitLabAPICommits()
+                    .postCommitStatus(gitLabProject.getId(), getFirstCommitSHA(), status, config.refName(), COMMIT_CONTEXT, null, statusDescription);
         } catch (IOException e) {
             // Workaround for https://gitlab.com/gitlab-org/gitlab-ce/issues/25807
             if (e.getMessage() != null && e.getMessage().contains("Cannot transition status")) {
@@ -291,12 +292,8 @@ public class GitLabApiV4Wrapper implements IGitLabApiWrapper {
 
         LOG.trace("Request Merge Request for project with id {} on the {} branch including the commit sha {}.", projectId, branch, commitSha);
 
-        Paged<GitlabMergeRequest> mergeRequests = gitLabAPIV4.getGitLabAPIMergeRequest()
-                .getAllProjectMergeRequestsBySourceBranchAndCommitShaWithStateOpen(projectId, branch, commitSha, null);
+        GitlabMergeRequest mergeRequest = getMergeRequest(projectId, branch, commitSha);
 
-        checkArgument(mergeRequests.getResults() != null && !mergeRequests.getResults().isEmpty(), "There are no merge requests.");
-
-        GitlabMergeRequest mergeRequest = mergeRequests.getResults().get(0);
         Paged<GitlabMergeRequestDiff> mergeRequestDiffs = gitLabAPIV4
                 .getGitLabAPIMergeRequestDiff().getMergeRequestDiff(projectId, mergeRequest.getIid());
 
@@ -307,6 +304,20 @@ public class GitLabApiV4Wrapper implements IGitLabApiWrapper {
         GitlabDiscussion discussion = createMergeRequestDiscussion(mergeRequestDiff, fullPath, line, body);
 
         gitLabAPIV4.getGitLabAPIMergeRequestDiscussion().createDiscussion(projectId, mergeRequest.getIid(), discussion);
+    }
+
+    private GitlabMergeRequest getMergeRequest(Integer projectId, String branch, String commitSha) {
+        if (config.isMergeRequestIidPresent()) {
+
+            return null;
+        } else {
+            Paged<GitlabMergeRequest> mergeRequests = gitLabAPIV4.getGitLabAPIMergeRequest()
+                    .getAllProjectMergeRequestsBySourceBranchAndCommitShaWithStateOpen(projectId, branch, commitSha, null);
+
+            checkArgument(mergeRequests.getResults() != null && !mergeRequests.getResults().isEmpty(), "There are no merge requests.");
+
+            return mergeRequests.getResults().get(0);
+        }
     }
 
     private GitlabDiscussion createMergeRequestDiscussion(GitlabMergeRequestDiff mergeRequestDiff, String fullPath, Integer line, String body) {
