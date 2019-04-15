@@ -306,7 +306,7 @@ public class GitLabApiV4Wrapper implements IGitLabApiWrapper {
         gitLabAPIV4.getGitLabAPIMergeRequestDiscussion().createDiscussion(projectId, mergeRequest.getIid(), discussion);
     }
 
-    private GitlabMergeRequest getMergeRequest(Integer projectId, String branch, String commitSha) {
+    private GitlabMergeRequest getMergeRequest(Integer projectId, String branch, String commitSha) throws IOException {
         if (config.isMergeRequestIidPresent()) {
 
             return null;
